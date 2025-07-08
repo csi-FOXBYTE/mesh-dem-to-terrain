@@ -11,7 +11,6 @@ A Node.js library for converting DEM meshes (DXF, GeoJSON, etc.) into Cesium Ter
 * [Options Overview](#options-overview)
 * [CLI Wrapper Example](#cli-wrapper-example)
 * [Contributing](#contributing)
-* [License](#license)
 
 ## 🎉 Features
 
@@ -117,7 +116,3 @@ const [,, archive, outDir, proj, startZ, endZ, threads] = process.argv;
 ## 🤝 Contributing
 
 Contributions are welcome! Please open issues or pull requests on the GitHub repository. 🙌
-
-## 📄 License
-
-MIT License. See [LICENSE](LICENSE) for details. 📝
