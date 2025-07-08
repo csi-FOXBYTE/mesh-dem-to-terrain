@@ -27,6 +27,7 @@ if (!parentPort) throw new Error("Is not being called in a worker context!");
 
 let tree: RBush<Tile> | null = null;
 let outputFolder: string | null = null;
+let skipLevel: number = 10;
 
 parentPort.on("message", async (message: WorkerPayloads) => {
   try {
@@ -35,6 +36,7 @@ parentPort.on("message", async (message: WorkerPayloads) => {
         tree = new RBush<Tile>().fromJSON(message.tree);
         parentPort!.postMessage("ok");
         outputFolder = message.outputFolder;
+        skipLevel = message.skipLevel;
         break;
       case "work":
         if (!tree) throw new Error("Worker is not initialized!");
@@ -63,14 +65,15 @@ parentPort.on("message", async (message: WorkerPayloads) => {
           new Vector3(mx1, my1, 2000)
         );
 
-        const searched = tree.search({
-          minX: mx0 - dx,
-          minY: my0 - dy,
-          maxX: mx1 + dx,
-          maxY: my1 + dy,
-        });
-
-        if (message.zoom < 8) searched.length = 0;
+        const searched =
+          message.zoom < skipLevel
+            ? []
+            : tree.search({
+                minX: mx0 - dx,
+                minY: my0 - dy,
+                maxX: mx1 + dx,
+                maxY: my1 + dy,
+              });
 
         for (const { path } of searched) {
           const { gt, indices, vertices } = await deserializeIndicesAndVertices(

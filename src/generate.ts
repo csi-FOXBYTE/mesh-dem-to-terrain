@@ -16,20 +16,28 @@ export default async function generate(
   outputFolder: string,
   progressCallback: (progress: number) => void,
   opts: {
-    writeFile: (
+    writeFile?: (
       path: string,
       file: Buffer | string,
       terrainTileInfos?: { x: number; y: number; zoom: number }
     ) => Promise<void>;
-    threadCount: number;
-  } = {
-    writeFile: async (path, file) => {
+    threadCount?: number;
+    endZoom?: number;
+    startZoom?: number;
+    skipLevel?: number;
+  }
+) {
+  const {
+    endZoom = 16,
+    startZoom = 0,
+    writeFile = async (path, file) => {
       await fs.mkdir(dirname(path), { recursive: true });
       await fs.writeFile(path, file);
     },
-    threadCount: 4
-  }
-) {
+    threadCount = 4,
+    skipLevel = 10,
+  } = opts;
+
   const metadata = JSON.parse(
     (await readFile(path.join(outputFolder, "metadata.json"))).toString()
   ) as Tiles;
@@ -48,9 +56,6 @@ export default async function generate(
     metadata.maxY,
   ]);
 
-  const startZoom = 0;
-  const endZoom = 18;
-
   const extents = [gx0, gy0, gx1, gy1] as const;
   // const extents = [9.9278,53.5364,9.9308,53.5378] as const;
 
@@ -58,11 +63,11 @@ export default async function generate(
 
   const levels = slippyGrid.levels(extents, startZoom, endZoom);
 
-  const total = levels.reduce((prev, [xs, ys], index, array) => {
+  const total = levels.reduce((prev, [xs, ys]) => {
     return prev + xs.length * ys.length;
   }, 0);
 
-  await opts.writeFile(
+  await writeFile(
     path.join(outputFolder, "layer.json"),
     JSON.stringify(
       {
@@ -84,8 +89,6 @@ export default async function generate(
     )
   );
 
-  const threadCount = opts.threadCount;
-
   const workerPool = new WorkerPool(
     () => new Worker(new URL("./worker.js", import.meta.url), {}),
     threadCount
@@ -95,6 +98,7 @@ export default async function generate(
     type: "init",
     tree: metadata.tiles,
     outputFolder,
+    skipLevel,
   } as WorkerInitPayload);
 
   let index = 0;
@@ -111,7 +115,7 @@ export default async function generate(
         y,
         zoom,
       });
-      await opts.writeFile(path, file, { x, y, zoom });
+      await writeFile(path, file, { x, y, zoom });
       index++;
       progressCallback(index / total);
     });

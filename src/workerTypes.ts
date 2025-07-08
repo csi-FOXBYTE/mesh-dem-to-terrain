@@ -4,6 +4,7 @@ export type WorkerInitPayload = {
   type: "init";
   tree: Record<string, any>;
   outputFolder: string;
+  skipLevel: number;
 };
 
 export type WorkerWorkPayload = {
