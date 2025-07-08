@@ -1,19 +1,40 @@
 {
   "name": "mesh-dem-to-terrain",
   "version": "0.0.1",
-  "description": "",
+  "description": "A Node.js library that converts DEM meshes (DXF, GeoJSON, etc.) into Cesium Terrain Tiles (quantized-mesh or heightmap) with flexible zoom-level control and multi-threading support.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/csi-FOXBYTE/mesh-dem-to-terrain.git"
+  },
+  "homepage": "https://github.com/csi-FOXBYTE/mesh-dem-to-terrain",
+  "keywords": [
+    "dem",
+    "terrain-tiles",
+    "cesium",
+    "quantized-mesh",
+    "heightmap",
+    "mesh",
+    "dxf",
+    "geojson",
+    "nodejs",
+    "converter",
+    "projection",
+    "proj4",
+    "multithreading",
+    "gis",
+    "geospatial"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsup",
     "prepublish": "tsup",
     "prepack": "tsup"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Tobias Ganzhorn @Foxbyte",
+  "license": "LGPL-3.0-or-later",
   "dependencies": {
     "@gltf-transform/core": "^4.2.0",
     "@gltf-transform/functions": "^4.2.0",
