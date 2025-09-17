@@ -11,6 +11,6 @@ import { generate, preprocess } from "./index.js";
   await generate(
     "D:\\dxf_test",
     (progress) => console.log((progress * 100).toFixed(2), "%"),
-    { endZoom: 16, startZoom: 0, threadCount: 2 }
+    { endZoom: 16, startZoom: 0, threadCount: 4 }
   );
 })();
