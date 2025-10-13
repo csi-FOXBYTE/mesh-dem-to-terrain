@@ -151,16 +151,19 @@ export default async function preprocess(
 
         for (const layer of set.layers) {
           layer.features.forEach((feature) => {
-            const obj = feature.getGeometry().toObject() as {
-              type: "LineString";
-              coordinates: [number, number, number][];
-            };
+            const obj = feature.getGeometry().toObject() as
+              | LineString
+              | Polygon;
 
             const indices = buildGeometry(obj);
 
-            const transformedCoordinates3857 = obj.coordinates.map(
-              (coordinates) => transform3857.forward(coordinates)
-            );
+            const transformedCoordinates3857 = (
+              obj.type === "Polygon"
+                ? obj.coordinates.flatMap((d) => d)
+                : obj.coordinates
+            ).map((coordinates) => {
+              return transform3857.forward(coordinates);
+            });
 
             if (!indices) return;
 

@@ -1,6 +1,6 @@
 {
   "name": "@csi-foxbyte/mesh-dem-to-terrain",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A Node.js library that converts DEM meshes (DXF, GeoJSON, etc.) into Cesium Terrain Tiles (quantized-mesh or heightmap) with flexible zoom-level control and multi-threading support.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

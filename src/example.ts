@@ -2,14 +2,14 @@ import { generate, preprocess } from "./index.js";
 
 (async () => {
   await preprocess(
-    "D:\\dxf.zip",
-    "D:\\dxf_test",
+    "D:\\downloads\\dgm5h_6535_MR (2).zip",
+    "D:\\dxf_test_2",
     console.log,
     "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"
   );
 
   await generate(
-    "D:\\dxf_test",
+    "D:\\dxf_test_2",
     (progress) => console.log((progress * 100).toFixed(2), "%"),
     { endZoom: 16, startZoom: 0, threadCount: 4 }
   );
