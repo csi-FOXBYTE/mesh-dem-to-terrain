@@ -1,4 +1,3 @@
-import { createWriteStream } from "fs";
 import { writeFile } from "fs/promises";
 import gdal from "gdal-async";
 import { basename, join } from "path";
@@ -8,6 +7,7 @@ import { Box3, Vector3 } from "three";
 import { triangulate3DPolygon } from "./helpers.js";
 import { Tile, Tiles } from "./types.js";
 import { processZip, yauzlOpen } from "./zip.js";
+import { serializeAndWriteIndicesAndVertices } from "./customFormat.js";
 
 export default async function preprocess(
   inputZip: string,
@@ -62,45 +62,7 @@ export default async function preprocess(
   // Use Terrain db with triangles
   // Query over triangle set?
 
-  async function serializeIndicesAndVertices(
-    out: string,
-    gt: Vector3,
-    indices: number[],
-    vertices: number[]
-  ) {
-    const stream = createWriteStream(out);
 
-    if (!stream.write(new Float64Array([gt.x, gt.y, gt.z]))) {
-      await new Promise<void>((resolve) => stream.once("drain", resolve));
-    }
-
-    if (!stream.write(new Int32Array([indices.length]))) {
-      await new Promise<void>((resolve) => stream.once("drain", resolve));
-    }
-    if (
-      !stream.write(
-        indices.length <= 2 ** 16
-          ? new Uint16Array(indices)
-          : new Uint32Array(indices)
-      )
-    ) {
-      await new Promise<void>((resolve) => stream.once("drain", resolve));
-    }
-
-    if (!stream.write(new Int32Array([vertices.length]))) {
-      await new Promise<void>((resolve) => stream.once("drain", resolve));
-    }
-    if (!stream.write(new Float32Array(vertices))) {
-      await new Promise<void>((resolve) => stream.once("drain", resolve));
-    }
-    stream.end();
-
-    // 7) Wait for the file stream to finish writing
-    await new Promise<void>((resolve, reject) => {
-      stream.on("finish", () => resolve());
-      stream.on("error", (err) => reject(err));
-    });
-  }
 
   const globalBoundingBox = new Box3();
 
@@ -206,25 +168,29 @@ export default async function preprocess(
           path: outputPath,
         });
 
-        await serializeIndicesAndVertices(
+        await serializeAndWriteIndicesAndVertices(
           outputPath,
           gt!,
           meshIndices,
           meshVertices
         );
 
-        await writeFile(
-          join(outputFolder, "metadata.json"),
-          JSON.stringify({
-            minX: globalBoundingBox.min.x,
-            minY: globalBoundingBox.min.y,
-            minZ: globalBoundingBox.min.z,
-            maxX: globalBoundingBox.max.x,
-            maxY: globalBoundingBox.max.y,
-            maxZ: globalBoundingBox.max.z,
-            tiles: tree.toJSON(),
-          } as Tiles)
-        );
+        try {
+          await writeFile(
+            join(outputFolder, "metadata.json"),
+            JSON.stringify({
+              minX: globalBoundingBox.min.x,
+              minY: globalBoundingBox.min.y,
+              minZ: globalBoundingBox.min.z,
+              maxX: globalBoundingBox.max.x,
+              maxY: globalBoundingBox.max.y,
+              maxZ: globalBoundingBox.max.z,
+              tiles: tree.toJSON(),
+            } as Tiles)
+          );
+        } catch (e) {
+          console.error(e);
+        }
 
         index++;
 

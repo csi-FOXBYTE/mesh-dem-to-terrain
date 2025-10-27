@@ -34,8 +34,8 @@ export async function processZip(
           readStream!.on("end", async () => {
             const fileBuffer = Buffer.concat(chunks);
             try {
-              zipFile.readEntry();
               await onEntryBuffer(entry.fileName, fileBuffer);
+              zipFile.readEntry();
             } catch (cbErr) {
               reject(cbErr);
             }

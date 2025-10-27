@@ -2,7 +2,7 @@ import { generate, preprocess } from "./index.js";
 
 (async () => {
   await preprocess(
-    "D:\\downloads\\dgm5h_6535_MR (2).zip",
+    "D:\\dxf.zip",
     "D:\\dxf_test_2",
     console.log,
     "+proj=utm +zone=32 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs"

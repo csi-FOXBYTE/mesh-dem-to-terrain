@@ -1,7 +1,6 @@
 import { Document, Logger } from "@gltf-transform/core";
 import { dedup, flatten, join, reorder, weld } from "@gltf-transform/functions";
 import Delaunator from "delaunator";
-import { readFile } from "fs/promises";
 import _ from "lodash";
 import { MeshoptEncoder } from "meshoptimizer";
 import RBush from "rbush";
@@ -20,6 +19,7 @@ import { QuantizedMesh } from "./quantizedMesh.js";
 import { Tile } from "./types.js";
 import { WorkerPayloads } from "./workerTypes.js";
 import path from "path";
+import { readAndDeserializeIndicesAndVertices } from "./customFormat.js";
 
 Logger.DEFAULT_INSTANCE = new Logger(Logger.Verbosity.SILENT);
 
@@ -76,7 +76,7 @@ parentPort.on("message", async (message: WorkerPayloads) => {
               });
 
         for (const { path } of searched) {
-          const { gt, indices, vertices } = await deserializeIndicesAndVertices(
+          const { gt, indices, vertices } = await readAndDeserializeIndicesAndVertices(
             path
           );
 
@@ -274,49 +274,6 @@ parentPort.on("message", async (message: WorkerPayloads) => {
     console.error(e);
   }
 });
-
-async function deserializeIndicesAndVertices(input: string) {
-  const file = await readFile(input);
-
-  const gt = new Vector3();
-
-  const x = file.readDoubleLE(0);
-  const y = file.readDoubleLE(8);
-  const z = file.readDoubleLE(16);
-
-  const indexStart = 24;
-
-  const indicesLength = file.readInt32LE(indexStart);
-
-  const indices = new Uint32Array(indicesLength);
-
-  const isBigIndex = indicesLength > 2 ** 16;
-  const indexStep = isBigIndex ? 4 : 2;
-
-  if (isBigIndex) {
-    for (let i = 0; i < indicesLength; i++) {
-      indices[i] = file.readUint32LE(indexStart + 4 + i * indexStep);
-    }
-  } else {
-    for (let i = 0; i < indicesLength; i++) {
-      indices[i] = file.readUint16LE(indexStart + 4 + i * indexStep);
-    }
-  }
-
-  const vertexStart = indexStart + 4 + indicesLength * indexStep;
-
-  const verticesLength = file.readInt32LE(vertexStart);
-
-  const vertices = new Float32Array(verticesLength);
-
-  for (let i = 0; i < verticesLength; i++) {
-    vertices[i] = file.readFloatLE(vertexStart + 4 + i * 4);
-  }
-
-  gt.set(x, y, z);
-
-  return { gt, indices, vertices };
-}
 
 /**
  * Convert a TMS tile coordinate (x, y, z) to EPSG:3857 bounds in metres.

@@ -39,7 +39,7 @@ export default async function generate(
   } = opts;
 
   const metadata = JSON.parse(
-    (await readFile(path.join(outputFolder, "metadata.json"))).toString()
+    (await readFile(path.join(path.resolve(outputFolder), "metadata.json"))).toString()
   ) as Tiles;
 
   const srcSRS4326 = "+proj=longlat +datum=WGS84 +no_defs +type=crs";
